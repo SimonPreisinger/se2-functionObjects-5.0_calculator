@@ -2,7 +2,9 @@
  * Java 1.8.0_121, Linux x86_64 4.15.4
  * bluna (Intel Core i7-5600U CPU/2.60GHz, 4 cores, 3183 MHz, 16000 MByte RAM)
  **/
-import java.util.Stack;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /** Commandline calculator.
  * @author R. Schiedermeier, rs@cs.hm.edu
@@ -18,14 +20,41 @@ public class Calculator {
      * @throws IllegalStateException if redo is the first command.
      * @throws IllegalStateException if undo is the first command.
      */
+
+    // unused -> System.out.println(42)
+    // $ -> System.out.println(42) // $ == unused
+    // key null oder impossible String = Zahl (push)
+
+        BiFunction<Integer, Integer, Integer> divide = Integer::divideUnsigned;
+
+        BiFunction<Integer, Integer, Integer> modulo;
+
+
+
+
     public Stack<Integer> run(Stack<Integer> numbers, String... commands) {
+
+        final Map<String, Consumer<String>> map;
+        map = new HashMap<>();
+        map.put("+", x -> numbers.push(numbers.pop() + numbers.pop()));
+        map.put("-", y -> numbers.push(-numbers.pop() + numbers.pop()));
+        map.put("/", x -> {int a = numbers.pop(), b = numbers.pop(); numbers.push(b/a);});
+        map.put("*", x -> numbers.push(numbers.pop() * numbers.pop()));
+        map.put("mod", x -> {int a = numbers.pop(), b = numbers.pop(); numbers.push(b % a);});
+        map.put("max", x -> numbers.push(Math.max( numbers.pop(), numbers.pop())));
+        map.put("+/-", x -> numbers.push(numbers.pop() * (-1)));
+        map.put("swap", x -> { int old = numbers.pop(),older = numbers.pop(); numbers.push(old); numbers.push(older);
+            });
+        map.put("dup", x -> numbers.push(numbers.firstElement()));
+        map.put("store", x -> map.put("saved", y -> numbers.pop()));
+        map.put("recall", $ -> map.get("saved"));
+
         for(String arg: commands)
-            switch(arg) {
-                case "+":
-                    int sum = numbers.pop();
-                    sum += numbers.pop();
-                    numbers.push(sum);
-                    break;
+        {
+
+            // tests schreiben
+            map.getOrDefault(arg, z -> numbers.push(Integer.parseInt(z))).accept(arg);
+
                 // "-" ... x y => ... (x-y)
                 // "/" ... x y => ... (x/y)
                 // "*" ... x y => ... (x*y)
@@ -41,15 +70,14 @@ public class Calculator {
                 // "gcd" ... x y => ... (ggT von x und y)
                 // "." letztes Kommando wiederholen
                 // "^" letztes Kommando rueckgaengig machen
-                default:
-                    numbers.push(Integer.parseInt(arg));
-                    break;
-            }
+
+        }
         return numbers;
     }
 
     public static void main(String... args) {
         System.out.println(new Calculator().run(new Stack<>(), args));
+
     }
 
 }

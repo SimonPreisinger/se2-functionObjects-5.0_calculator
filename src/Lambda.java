@@ -84,7 +84,6 @@ public class Lambda implements N,S {
         // polyS.method(3); // not possible because string
         polyS.method("drei");
 
-
     }
 
     @Override
